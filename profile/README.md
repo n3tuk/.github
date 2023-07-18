@@ -4,9 +4,18 @@ The `n3tuk` Organisation is a central organisation within GitHub for the
 management and development of the infrastructure for `n3t.uk`, which includes:
 
 - Privately-hosted Kubernetes Cluster on Intel NUCs;
-- CloudFlare DNS and Zero-Trust networking;
+- Cloudflare DNS and Zero-Trust networking;
 - AWS Accounts and Services; and
 - Testing and development applications and service.
+
+Visit the [`n3tuk` Documentation][n3tuk-documentation] site for both an
+overview as well as a breakdown of the infrastructure and its operations
+([hosted via GitHub][github-n3tuk-documentation] and [Cloudflare
+Pages][cloudflare-pages] using Hugo)
+
+[n3tuk-documentation]: https://documentation.n3t.uk
+[github-n3tuk-documentation]: https://github.com/n3tuk/documentation
+[cloudflare-pages]: https://pages.cloudflare.com/
 
 ## Diagram
 
