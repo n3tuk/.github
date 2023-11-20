@@ -23,7 +23,7 @@ development infrastructure for Jonathan Wright
 
 Documentation is available at:
 
-- [https://documentation.n3t.uk][documentation]
+- [https://d.n3t.uk][documentation]
 
-[documentation]: https://documentation.n3t.uk/
-[hardware]: https://documentation.n3t.uk/network/
+[documentation]: https://d.n3t.uk/
+[hardware]: https://d.n3t.uk/network/
