@@ -1,7 +1,7 @@
 ---
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks.git
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-merge-conflict
         name: Check for merge conflicts before committing
@@ -19,20 +19,57 @@ repos:
       - id: end-of-file-fixer
         name: Check all files end in a new-line only
 
-  - repo: https://github.com/python-jsonschema/check-jsonschema.git
-    rev: 0.23.0
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks.git
+    rev: 3.0.0
     hooks:
+      - id: script-must-have-extension
+        name: Check non-executable shell scripts end with .sh extension
+      - id: script-must-not-have-extension
+        name: Check executable shell scripts to not have extension
+      - id: shellcheck
+        name: Check shell scripts with shellcheck
+      - id: shfmt
+        name: Check shell scripts formtting with shfmt
+        args: ['-i', '2', '-bn', '-ci']
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema.git
+    rev: 0.28.0
+    hooks:
+      - name: Check the Dependabot configuration for correctness
+        id: check-dependabot
       - name: Check the GitHub Workflows for correctness
         id: check-github-workflows
 
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        name: Run Prettier to check and format selected file types
+        types_or:
+          - json
+          - yaml
+          - markdown
+        additional_dependencies:
+          - prettier@3.2.5
+        args:
+          - --config=.prettier.yaml
+          # This pre-commit-hook does not properly process singleQuote in the
+          # configuration file above, so hard-code it here, or checks will fail
+          - --single-quote
+
   - repo: https://github.com/igorshubovych/markdownlint-cli.git
-    rev: v0.34.0
+    rev: v0.39.0
     hooks:
       - id: markdownlint
         name: Check Markdown correctness and formatting
+        args:
+          - --config
+          - .markdownlint.yaml
+          - --ignore-path
+          - .markdownignore
 
   - repo: https://github.com/zricethezav/gitleaks.git
-    rev: v8.16.3
+    rev: v8.18.2
     hooks:
       - id: gitleaks
         name: Check for hard-coded secrets, keys, and credentials
