@@ -4,34 +4,27 @@ default: true
 
 # no-hard-tabs
 MD010:
-  # Include code blocks
   code_blocks: true
-  # Fenced code languages to ignore
   ignore_code_languages: []
-  # Number of spaces for each hard tab
   spaces_per_tab: 2
 
 # line-length
 MD013:
-  # Number of characters
   line_length: 80
-  # Number of characters for headings
-  heading_line_length: 50
-  # Include code blocks
+  heading_line_length: 80
+  # Exclude the following elements from
+  # maximum line-length checks
   code_blocks: false
-  # Include tables
   tables: false
-  # Strict length checking
   strict: false
-  # Stern length checking
   stern: false
 
 # no-inline-html
 MD033:
   allowed_elements:
-    - "a"
-    - "pre"
-    - "br"
+    - 'a'
+    - 'pre'
+    - 'br'
 
 # no-bare-urls
 MD034: false

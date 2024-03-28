@@ -1,0 +1,334 @@
+---
+version: 3
+output: prefixed
+# Set the value for the watch interval to take into account the longest running
+# task in the set, as if it normally takes longer than the default interval the
+# context will be cancelled and the command interrupted, triggering a retry
+interval: 5s
+
+includes:
+  utils:
+    taskfile: .taskfiles/utils.yaml
+    internal: true
+
+tasks:
+  default:
+    desc: Run the development and integration tasks
+    summary: |-
+      Clean the environment and then run the development and integration tasks
+      for all configurations, testing and checking those code and files, but
+      only run through once, not continuously.
+
+      Use the following command for additional information on the steps involved:
+
+      $ task --summary develop
+    silent: true
+    cmds:
+      - task: develop
+
+  develop:
+    aliases:
+      - dev
+    desc: Continiously run the development and integration tasks in the background
+    summary: |-
+      The develop task is designed to perform continuous integration on code
+      changes within this repository, first cleaning and then running the
+      following tasks when any relevant files are changed.
+
+      - Lint all supported files, ensuring their layout and syntax are correct.
+    silent: true
+    watch: true
+    deps:
+      - task: utils:pre-commit
+      - task: clean
+    cmds:
+      - task: lint
+
+  lint:
+    desc: Lint selected files within this repository
+    summary: |-
+      Run linting checks across the files in this repository, such as
+      configuration files and all documentation to find any potential issues
+      within the repository by running the following steps:
+
+      - Parse all JSON, YAML, and Markdown files through Prettier in order to
+        ensure they are syntactically correct, and that they are consistent in
+        their layout and usage;
+      - Parse selected configurations (such as Taskfiles, GitHub Dependabot
+        configuration, and GitHub Workflows) through JSON Schema to evaluate
+        these free-from configuration types are correctly structured for their
+        intended usage (i.e. keys are in the right place, the values are what is
+        expected or supported, and required settings are present);
+      - Review the format of Markdown files to ensure they are clean and
+        minimise the ability for the page to be incorrectly rendered, such as
+        de-duplicating headers, consistent text width, formatted list items,
+        and code layouts.
+    silent: true
+    cmds:
+      - task: jsonschema
+      - task: prettier
+      - task: markdownlint
+      - task: shellcheck
+      - task: shfmt
+
+  prettier:
+    internal: true
+    silent: true
+    sources:
+      - '.*.md'
+      - '.*.yaml'
+      - '.*.json'
+      - '*.md'
+      - '*.yaml'
+      - '*.json'
+      - '.*/**.md'
+      - '.*/**.yaml'
+      - '.*/**.json'
+      - '**/*.md'
+      - '**/*.yaml'
+      - '**/*.json'
+      - '.prettier.yaml'
+      - '.prettierignore'
+      - '.gitignore'
+      # This is not a complete Markdown document, but a partial template which
+      # is used when creating pull requests within GitHub, so ignore it
+      - exclude: .github/PULL_REQUEST_TEMPLATE.md
+    deps:
+      - task: utils:pre-checks
+    vars:
+      files:
+        sh: |-
+          find . \
+               -ignore_readdir_race \
+               -type f \
+            \(           -iname '*.yaml' \
+               -or       -iname '*.json' \
+               -or       -iname '*.md' \) \
+               -printf '%P ' \
+          2>/dev/null || true
+    cmds:
+      - cmd: |-
+          prettier --log-level log \
+            --write --config .prettier.yaml \
+            --cache --cache-location .prettiercache \
+            {{ .files }}
+          echo -e '\033[0;32mPassed\033[0m'
+
+  markdownlint:
+    internal: true
+    silent: true
+    sources:
+      - '.*.md'
+      - '*.md'
+      - '.*/**.md'
+      - '**/*.md'
+      - '.markdownlint.yaml'
+      - '.markdownignore'
+      - exclude: .github/PULL_REQUEST_TEMPLATE.md
+    deps:
+      - task: utils:check:markdownlint
+    vars:
+      files:
+        sh: |-
+          find . \
+            -ignore_readdir_race \
+            -type f \
+            -not -path '*/node_modules/*' \
+            -iname '*.md' \
+            -printf '%P ' \
+          2>/dev/null || true
+    cmds:
+      - cmd: |-
+          markdownlint \
+            --config .markdownlint.yaml \
+            --ignore-path .markdownignore \
+            {{ .files }}
+          echo -e '\033[0;32mPassed\033[0m'
+
+  jsonschema:
+    internal: true
+    silent: true
+    cmds:
+      - task: jsonschema:taskfiles
+      - task: jsonschema:dependabot
+      - task: jsonschema:workflows
+      - task: jsonschema:issues
+      - task: jsonschema:templates
+
+  jsonschema:taskfiles:
+    internal: true
+    silent: true
+    sources:
+      - 'Taskfile.yaml'
+      - '.taskfiles/*.yaml'
+    deps:
+      - task: utils:check:check-jsonschema
+    cmds:
+      - cmd: |-
+          [[ -z "{{ .files }}" ]] && exit 0
+          check-jsonschema \
+            --output-format text --no-cache --verbose \
+            --schemafile https://raw.githubusercontent.com/go-task/task/main/website/static/schema.json \
+            Taskfile.yaml .taskfiles/*.yaml
+          echo -e '\033[0;32mPassed\033[0m'
+
+  jsonschema:dependabot:
+    internal: true
+    silent: true
+    sources:
+      - '.github/dependabot.yaml'
+    deps:
+      - task: utils:check:check-jsonschema
+    cmds:
+      # Check that the dependabot.yaml file exists first, and fail cleanly if
+      # that is the case, otherwise check-jsonschema will fail the check
+      - cmd: |-
+          [[ -f .github/dependabot.yaml ]] || exit 0
+          check-jsonschema \
+            --output-format text --no-cache --verbose \
+            --builtin-schema vendor.dependabot \
+            .github/dependabot.yaml
+          echo -e '\033[0;32mPassed\033[0m'
+
+  jsonschema:workflows:
+    internal: true
+    silent: true
+    sources:
+      - '.github/workflows/*.yaml'
+    deps:
+      - task: utils:check:check-jsonschema
+    vars:
+      files:
+        sh: |-
+          find .github/workflows \
+            -ignore_readdir_race \
+            -type f \
+            -iname '*.yaml' \
+            -printf '.github/workflows/%P ' \
+          2>/dev/null || true
+    cmds:
+      - cmd: |-
+          [[ -z "{{ .files }}" ]] && exit 0
+          check-jsonschema \
+            --output-format text --no-cache --verbose \
+            --builtin-schema vendor.github-workflows \
+            {{ .files }}
+          echo -e '\033[0;32mPassed\033[0m'
+
+  jsonschema:issues:
+    internal: true
+    silent: true
+    sources:
+      - '.github/ISSUE_TEMPLATE/config.yaml'
+    deps:
+      - task: utils:check:check-jsonschema
+    vars:
+      files:
+        sh: |-
+          find .github/ISSUE_TEMPLATE \
+            -ignore_readdir_race \
+            -type f \
+            -iname '*.yaml' \
+            -printf '.github/ISSUE_TEMPLATE/%P ' \
+          2>/dev/null || true
+    cmds:
+      - cmd: |-
+          [[ -z "{{ .files }}" ]] && exit 0
+          check-jsonschema \
+            --output-format text --no-cache --verbose \
+            --schemafile https://json.schemastore.org/github-issue-config.json \
+            {{ .files }}
+          echo -e '\033[0;32mPassed\033[0m'
+
+  jsonschema:templates:
+    internal: true
+    silent: true
+    sources:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - exclude: '.github/ISSUE_TEMPLATE/config.yaml'
+    deps:
+      - task: utils:check:check-jsonschema
+    vars:
+      files:
+        sh: |-
+          find .github/ISSUE_TEMPLATE \
+            -ignore_readdir_race \
+            -type f \
+            -iname '*.yaml' \
+            -and not -iname 'config.yaml' \
+            -printf '.github/ISSUE_TEMPLATE/%P ' \
+          2>/dev/null || true
+    cmds:
+      - cmd: |-
+          [[ -z "{{ .files }}" ]] && exit 0
+          check-jsonschema \
+            --output-format text --no-cache --verbose \
+            --schemafile https://json.schemastore.org/github-issue-forms.json \
+            {{ .files }}
+          echo -e '\033[0;32mPassed\033[0m'
+
+  shellcheck:
+    internal: true
+    silent: true
+    sources:
+      - 'scripts/bin/*'
+      - 'scripts/lib/*.sh'
+      - 'scripts/lib/**/*.sh'
+    deps:
+      - task: utils:check:shellcheck
+    vars:
+      files:
+        sh: |-
+          find scripts/ \
+            -ignore_readdir_race \
+            -type f \
+            -not -iname '*.bats' \
+            -printf 'scripts/%P ' 2>/dev/null
+    cmds:
+      - cmd: |-
+          [[ -z "{{ .files }}" ]] && exit 0
+          shellcheck \
+            --format=tty \
+            --check-sourced \
+            --external-sources \
+            --source-path scripts/lib \
+            {{ .files }}
+          echo -e '\033[0;32mPassed\033[0m'
+
+  shfmt:
+    internal: true
+    silent: true
+    sources:
+      - 'scripts/bin/*'
+      - 'scripts/lib/*.sh'
+      - 'scripts/lib/**/*.sh'
+    deps:
+      - task: utils:check:shfmt
+    vars:
+      files:
+        sh: |-
+          find scripts/ \
+            -ignore_readdir_race \
+            -type f \
+            -not -iname '*.bats' \
+            -printf 'scripts/%P ' 2>/dev/null
+    cmds:
+      - cmd: |-
+          [[ -z "{{ .files }}" ]] && exit 0
+          shfmt \
+            -l -d -i 2 -bn -ci \
+            {{ .files }}
+          echo -e '\033[0;32mPassed\033[0m'
+
+  clean:
+    desc: Clean temporary files from the repository and configurations
+    silent: true
+    summary: |-
+      Clean any temporary directories and files created by both this Taskfile,
+      and the tools and applications called from it, and from within the
+      configurations.
+    run: once
+    cmds:
+      - cmd: rm -f .prettiercache
+      - cmd: rm -rf .task
+      - cmd: echo -e '\033[0;32mCompleted\033[0m'
