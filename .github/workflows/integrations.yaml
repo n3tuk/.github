@@ -1,0 +1,69 @@
+---
+name: Checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    # Error handling and pipefile must be explicitly set via the default shell
+    #   https://github.com/actions/runner/issues/353#issuecomment-1067227665
+    shell: bash --noprofile --norc -eo pipefail {0}
+
+jobs:
+  linting:
+    name: Lint .github Repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      # Prepare the local environment with the expected tooling from Go, Python,
+      # and Node languages, as well as local installs via apt on Ubuntu.
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/go.mod
+          cache-dependency-path: tools/go.sum
+          cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: pip
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: tools/package.json
+          cache-dependency-path: tools/yarn.lock
+          cache: yarn
+
+      - name: Install required Go tools
+        run: scripts/bin/install-go-tools
+
+      - name: Install required Python tools
+        run: scripts/bin/install-python-tools
+
+      - name: Install required Node tools
+        run: scripts/bin/install-node-tools
+
+      - name: Install required Ubuntu tools
+        run: scripts/bin/install-apt-tools
+
+      - name: Lint the workflows-terraform repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          task clean lint \
+            --output group \
+            --output-group-begin '::group::{{ .TASK }}' \
+            --output-group-end '::endgroup::'

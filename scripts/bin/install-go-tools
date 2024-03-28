@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# vim:set ft=bash:
+
+LIB_DIR="$(dirname "${0}")/../lib/"
+# shellcheck source=../lib/common.sh
+source "${LIB_DIR}/common.sh"
+
+# Usage: ::command::
+#
+# Script to automate the installation of standard tooling which should be
+# available within the GitHub Workflows. This uses the classic Go Module for
+# managing tooling, while also enabling Dependabot to review and update versions
+# as required on updates and security issues.
+#
+# Environment variables:
+#
+#   GITHUB_WORKSPACE - Required from Workflows, and sets the current location of
+#                      the root of the checked out GitHub repository for which
+#                      this GitHub Workflow is being run.
+#
+# Returns 0 if all tools successfully installed
+# Returns 1 if any step fails
+
+check_variables GITHUB_REPOSITORY GITHUB_WORKSPACE
+check_commands go
+
+TOOLS_DIR="${GITHUB_WORKSPACE}/tools"
+show_debug "TOOLS_DIR = '${TOOLS_DIR}'"
+
+cd "${TOOLS_DIR}" \
+  || exit_error "TOOLS_DIR does not exist" "Could not enter ${TOOLS_DIR}"
+
+# Ensure that all the required libraries are downloaded based on what has been
+# configured in go.mod and go.sum
+start_group "go mod download"
+go mod download
+end_group
+
+# Iterate through each of the entries provided in tools.go and install the
+# applications into the local environment so they can be installed
+grep _ tools.go \
+  | awk -F'"' '{print $2}' \
+  | while read -r tool; do
+    start_group "${tool}"
+    go install "${tool}"
+    end_group
+  done

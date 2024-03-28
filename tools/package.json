@@ -1,0 +1,12 @@
+{
+  "name": "workflows-terraform",
+  "description": "A repository for Terraform-focused GitHub Workflows",
+  "private": true,
+  "engines": {
+    "node": ">= 20.0.0 <22.0.0"
+  },
+  "dependencies": {
+    "markdownlint-cli": "^0.39.0",
+    "prettier": "^3.2.5"
+  }
+}

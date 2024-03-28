@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# vim:set ft=bash:
+
+LIB_DIR="$(dirname "${0}")/../lib/"
+# shellcheck source=../lib/common.sh
+source "${LIB_DIR}/common.sh"
+
+# Usage: ::command::
+#
+# Script to automate the installation of standard tooling which should be
+# available within the GitHub Workflows. This uses the apt packing service to
+# manage the tooling.
+#
+# Returns 0 if all tools successfully installed
+# Returns 1 if any step fails
+
+check_variables GITHUB_REPOSITORY GITHUB_WORKSPACE
+check_commands pip
+
+TOOLS_DIR="${GITHUB_WORKSPACE}/tools"
+show_debug "TOOLS_DIR = '${TOOLS_DIR}'"
+
+cd "${TOOLS_DIR}" \
+  || exit_error "TOOLS_DIR does not exist" "Could not enter ${TOOLS_DIR}"
+
+[[ -f packages.txt ]] \
+  || exit_error "packages list not found" "Could not find or read tools/packages.txt"
+
+# Run update to ensure we have the latest package lists before installing
+start_group "apt update"
+sudo apt update
+end_group
+
+# shellcheck disable=SC2046
+while read -r tool; do
+  start_group "${tool}"
+  sudo apt install "${tool}"
+  end_group
+done <<<$(cat packages.txt)
