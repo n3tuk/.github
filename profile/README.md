@@ -9,16 +9,25 @@ development infrastructure for Jonathan Wright
 
 [github-jonathanio]: https://github.com/jonathanio
 
-- Privately-hosted [Kubernetes Cluster][kubernetes] on [Intel NUCs][hardware];
-- [Cloudflare DNS][cloudflare-dns], [Pages][cloudflare-pages], and [Zero-Trust
-  networking][cloudflare-zero-trust];
+- Privately-hosted [Talos Linux][talos]-based [Kubernetes Cluster][k8s] on
+  [Intel NUCs][hardware] running the [Proxmox][pm] [Virtualisation
+  Environment][pm-ve] in [cluster mode][pm-cluster];
+- [Cloudflare DNS][cf-dns], [Cloudflare Pages][cf-pages] and [GitHub
+  Pages][gh-pages], plus Cloudflare [Tunnels][cf-tunnels] and [Zero-Trust
+  networking][cf-zero-trust];
 - [AWS Accounts and Services][aws]; and
 - Testing and development applications and services.
 
-[kubernetes]: https://kubernetes.io/
-[cloudflare-dns]: https://www.cloudflare.com/dns/
-[cloudflare-pages]: https://pages.cloudflare.com/
-[cloudflare-zero-trust]: https://www.cloudflare.com/zero-trust/
+[talos]: https://www.talos.dev/
+[k8s]: https://kubernetes.io/
+[pm]: https://www.proxmox.com/
+[pm-ve]: https://www.proxmox.com/en/proxmox-virtual-environment/overview
+[pm-cluster]: https://www.proxmox.com/en/proxmox-virtual-environment/features#nav-mod-scrollspy435-data2
+[cf-dns]: https://www.cloudflare.com/dns/
+[cf-pages]: https://pages.cloudflare.com/
+[gh-pages]: https://pages.github.com/
+[cf-tunnels]: https://www.cloudflare.com/en-gb/products/tunnel/
+[cf-zero-trust]: https://www.cloudflare.com/zero-trust/
 [aws]: https://aws.amazon.com/
 
 Documentation is available at:
