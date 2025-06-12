@@ -45,7 +45,7 @@ require (
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/term v0.17.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
-	gopkg.in/yaml.v2 v2.2.7 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	mvdan.cc/sh/v3 v3.8.0 // indirect
 )
