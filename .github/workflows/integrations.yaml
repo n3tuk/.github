@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Prepare the local environment with the expected tooling from Go, Python,
       # and Node languages, as well as local installs via apt on Ubuntu.
