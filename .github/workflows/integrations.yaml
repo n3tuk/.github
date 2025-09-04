@@ -28,7 +28,7 @@ jobs:
       # and Node languages, as well as local installs via apt on Ubuntu.
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: tools/go.mod
           cache-dependency-path: tools/go.sum
