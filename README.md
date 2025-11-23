@@ -1,6 +1,6 @@
 # n3t.uk Organisation
 
-![Network Diagram](https://github.com/n3tuk/.github/blob/main/images/network-light.svg)
+![Network Diagram](https://github.com/n3tuk/.github/blob/main/images/network.svg)
 
 The `n3tuk` Organisation is a central organisation within GitHub for the
 management and development of the infrastructure for `n3t.uk`, the personal and
