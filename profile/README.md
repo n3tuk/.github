@@ -13,8 +13,8 @@ development infrastructure for Jonathan Wright
   [Intel NUCs][hardware] running the [Proxmox][pm] [Virtualisation
   Environment][pm-ve] in [cluster mode][pm-cluster];
 - [Cloudflare DNS][cf-dns], [Cloudflare Pages][cf-pages] and [GitHub
-  Pages][gh-pages], plus Cloudflare [Tunnels][cf-tunnels] and [Zero-Trust
-  networking][cf-zero-trust];
+  Pages][gh-pages], plus Cloudflare [Tunnels][cf-tunnels] and [Tailscale
+  Tailnet networking][tailscale];
 - [AWS Accounts and Services][aws]; and
 - Testing and development applications and services.
 
@@ -27,7 +27,7 @@ development infrastructure for Jonathan Wright
 [cf-pages]: https://pages.cloudflare.com/
 [gh-pages]: https://pages.github.com/
 [cf-tunnels]: https://www.cloudflare.com/en-gb/products/tunnel/
-[cf-zero-trust]: https://www.cloudflare.com/zero-trust/
+[tailscale]: https://tailscale.com/
 [aws]: https://aws.amazon.com/
 
 Documentation is available at:
